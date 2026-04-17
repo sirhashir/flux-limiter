@@ -1,0 +1,10 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: flux-limiter
+  data:
+    redis:
+      host: localhost
+      port: 6379
