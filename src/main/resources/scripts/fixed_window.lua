@@ -6,7 +6,7 @@ local now = tonumber(ARGV[3])
 local window_start = now - (now % window_seconds)
 local window_key = key .. ":" .. window_start
 
-local count = rediscall('INCR', window_key)
+local count = redis.call('INCR', window_key)
 
 if count == 1 then
 	redis.call('EXPIRE', window_key, window_seconds * 2)

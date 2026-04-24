@@ -1,10 +1,11 @@
 package com.sirhashir.fluxlimiter.controller;
 
-import com.sirhashir.fluxlimiter.model.Algorithm;
 import com.sirhashir.fluxlimiter.model.CheckRequest;
 import com.sirhashir.fluxlimiter.model.CheckResponse;
 import com.sirhashir.fluxlimiter.model.TenantConfig;
-import com.sirhashir.fluxlimiter.service.TokenBucketLimiter;
+import com.sirhashir.fluxlimiter.service.RateLimiter;
+import com.sirhashir.fluxlimiter.service.RateLimiterFactory;
+import com.sirhashir.fluxlimiter.service.TenantConfigService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -16,23 +17,25 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api")
 public class RateLimitController {
 
-    private final TokenBucketLimiter tokenBucketLimiter;
+    private static final String RATE_LIMIT_KEY_PREFIX = "rl:";
 
-    public RateLimitController(TokenBucketLimiter tokenBucketLimiter) {
-        this.tokenBucketLimiter = tokenBucketLimiter;
+    private final TenantConfigService tenantConfigService;
+    private final RateLimiterFactory rateLimiterFactory;
+
+    public RateLimitController(TenantConfigService tenantConfigService, RateLimiterFactory rateLimiterFactory) {
+        this.tenantConfigService = tenantConfigService;
+        this.rateLimiterFactory = rateLimiterFactory;
     }
 
     @PostMapping("/check")
-    public ResponseEntity<CheckResponse> check(@Valid @RequestBody CheckRequest request) {
-        TenantConfig config = new TenantConfig();
-        config.setTenantId(request.getTenantId());
-        config.setAlgorithm(Algorithm.TOKEN_BUCKET);
-        config.setLimit(5);
-        config.setWindowSeconds(5);
+    public ResponseEntity<CheckResponse> check(@Valid @RequestBody CheckRequest request) throws IllegalAccessException {
+        TenantConfig config = tenantConfigService.get(request.getTenantId())
+                .orElseThrow(() -> new IllegalArgumentException("Tenant not found: " + request.getTenantId()));
 
-        String redisKey = "r1:" + request.getTenantId() + ":" + request.getKey();
+        RateLimiter limiter = rateLimiterFactory.getLimiter(config.getAlgorithm());
+        String redisKey = RATE_LIMIT_KEY_PREFIX + request.getTenantId() + ":" + request.getKey();
 
-        CheckResponse response = tokenBucketLimiter.check(redisKey, config);
+        CheckResponse response = limiter.check(redisKey, config);
         return ResponseEntity.ok(response);
     }
 }
