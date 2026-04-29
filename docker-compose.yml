@@ -8,5 +8,45 @@ services:
       - redis-data:/data
     restart: unless-stopped
 
+  app1:
+    build: .
+    container_name: flux-app1
+    environment:
+      - SPRING_DATA_REDIS_HOST=redis
+    depends_on:
+      - redis
+    restart: unless-stopped
+
+  app2:
+    build: .
+    container_name: flux-app2
+    environment:
+      - SPRING_DATA_REDIS_HOST=redis
+    depends_on:
+      - redis
+    restart: unless-stopped
+
+  app3:
+    build: .
+    container_name: flux-app3
+    environment:
+      - SPRING_DATA_REDIS_HOST=redis
+    depends_on:
+      - redis
+    restart: unless-stopped
+
+  nginx:
+    image: nginx:alpine
+    container_name: flux-nginx
+    ports:
+      - "8080:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - app1
+      - app2
+      - app3
+    restart: unless-stopped
+
 volumes:
   redis-data:
