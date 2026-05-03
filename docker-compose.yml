@@ -48,5 +48,15 @@ services:
       - app3
     restart: unless-stopped
 
+  k6:
+    image: grafana/k6:latest
+    container_name: flux-k6
+    volumes:
+      - ./benchmarks:/benchmarks
+    depends_on:
+      - nginx
+    profiles:
+      - benchmark
+
 volumes:
   redis-data:
