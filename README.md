@@ -1,4 +1,8 @@
 # Flux Limiter
+![Java](https://img.shields.io/badge/Java-17-orange)
+![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5-brightgreen)
+![Redis](https://img.shields.io/badge/Redis-7-red)
+![License](https://img.shields.io/badge/License-MIT-blue)
 
 A distributed, multi-tenant rate limiter service backed by Redis. Three algorithms behind a unified interface, atomic operations via Lua scripts, horizontally scalable behind nginx.
 
