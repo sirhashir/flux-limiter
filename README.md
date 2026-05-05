@@ -6,8 +6,6 @@
 
 A distributed, multi-tenant rate limiter service backed by Redis. Three algorithms behind a unified interface, atomic operations via Lua scripts, horizontally scalable behind nginx.
 
-Built as a 2-day sprint to dig deeper into distributed systems primitives, atomicity across instances, algorithm tradeoffs, and benchmarking real numbers.
-
 ## Why I built this
 
 I wanted a project that demonstrates actual backend depth instead of another CRUD app. Rate limiters sit in front of every real API and have a few interesting design problems: how do you keep a counter consistent across multiple service instances, how do you handle race conditions without bottlenecking on a Java lock, and what algorithm tradeoffs actually matter in production.
