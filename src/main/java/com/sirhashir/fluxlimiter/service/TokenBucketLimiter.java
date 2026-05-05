@@ -33,8 +33,6 @@ public class TokenBucketLimiter implements RateLimiter{
         double refillRate = (double) config.getLimit() / config.getWindowSeconds();
         long now = System.currentTimeMillis() / 1000;
 
-        System.out.println("DEBUG: key=" + key + ", capacity=" + config.getLimit() + ", refillRate=" + refillRate + ", now=" + now);
-
         List<Long> result = redisTemplate.execute(
                 script,
                 List.of(key),
@@ -42,8 +40,6 @@ public class TokenBucketLimiter implements RateLimiter{
                 String.valueOf(refillRate),
                 String.valueOf(now)
         );
-
-        System.out.println("DEBUG: result=" + result);
 
         boolean allowed = result.get(0) == 1L;
         long remaining = result.get(1);

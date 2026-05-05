@@ -32,11 +32,11 @@ public class RateLimiterFactory {
         limiterMap.put(Algorithm.SLIDING_WINDOW, slidingWindowLogLimiter);
     }
 
-    public RateLimiter getLimiter(Algorithm algorithm) throws IllegalAccessException {
-        RateLimiter rateLimiter = limiterMap.get(algorithm);
-        if(rateLimiter == null) {
-            throw new IllegalAccessException("No limiter registered for algo: "+algorithm);
+    public RateLimiter getLimiter(Algorithm algorithm) {
+        RateLimiter limiter = limiterMap.get(algorithm);
+        if (limiter == null) {
+            throw new IllegalStateException("No limiter registered for algorithm: " + algorithm);
         }
-        return rateLimiter;
+        return limiter;
     }
 }
