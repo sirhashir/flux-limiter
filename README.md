@@ -16,7 +16,7 @@ This was also an excuse to use Lua inside Redis, which I'd never done before.
 
 - 3 algorithms: token bucket, sliding window log, fixed window counter
 - Per-tenant configuration (each API key gets its own algorithm and limits)
-- Distributed by default — all state in Redis, atomic via Lua
+- Distributed by default; all state in Redis, atomic via Lua
 - Admin REST API for runtime config updates (no service restart)
 - Sub-5ms p99 latency under light load, 6,000+ req/sec sustained throughput
 - Dockerized, runs with `docker compose up`
@@ -91,7 +91,7 @@ Hit it 100 times and watch `remaining` count down to 0, then `allowed` flips to 
 
 ### Data plane
 
-`POST /api/check` — check if a request is allowed
+`POST /api/check` : check if a request is allowed
 
 ```json
 Request:  {"tenantId": "my-app", "key": "endpoint-1"}
@@ -100,10 +100,10 @@ Response: {"allowed": true, "remaining": 99, "resetAt": 1713352800}
 
 ### Admin
 
-- `POST /admin/tenants` — create a tenant config
-- `GET /admin/tenants/{id}` — read a tenant config
-- `PUT /admin/tenants/{id}` — update a tenant config
-- `DELETE /admin/tenants/{id}` — delete a tenant config
+- `POST /admin/tenants` : create a tenant config
+- `GET /admin/tenants/{id}` : read a tenant config
+- `PUT /admin/tenants/{id}` : update a tenant config
+- `DELETE /admin/tenants/{id}` : delete a tenant config
 
 Admin endpoints take/return:
 
@@ -136,17 +136,17 @@ Tested on i5-11400H, Windows 11, Docker Desktop, all containers colocated. On Li
 
 ### Why Redis + Lua and not just Java locks?
 
-Java locks (`synchronized`, `ReentrantLock`) only work within one JVM. With 3 instances behind nginx, a Java lock is useless — instances don't share JVMs. The lock has to live in shared state.
+Java locks (`synchronized`, `ReentrantLock`) only work within one JVM. With 3 instances behind nginx, a Java lock is useless i.e. instances don't share JVMs. The lock has to live in shared state.
 
 Redis executes Lua scripts atomically. The entire script runs as a single uninterruptible operation, regardless of how many clients are connected. This is the same guarantee as a `synchronized` block, except the lock is in Redis, which all instances share.
 
 ### Why three algorithms instead of just one?
 
-Real rate limiters offer a choice. Stripe's API uses different algorithms for different endpoints. Building all three forced me to actually understand the tradeoffs instead of just memorizing them — token bucket's lazy refill math, fixed window's boundary problem, sliding window log's memory cost.
+Real rate limiters offer a choice. Stripe's API uses different algorithms for different endpoints. Building all three forced me to actually understand the tradeoffs instead of just memorizing them; token bucket's lazy refill math, fixed window's boundary problem, sliding window log's memory cost.
 
 ### Why the strategy pattern?
 
-The algorithm choice is a runtime decision (per tenant), not compile-time. Polymorphism via subclassing doesn't work because the controller isn't choosing between algorithms by class type — it's reading the config from Redis and dispatching. The factory + interface pattern is the standard solution.
+The algorithm choice is a runtime decision (per tenant), not compile-time. Polymorphism via subclassing doesn't work because the controller isn't choosing between algorithms by class type, it's reading the config from Redis and dispatching. The factory + interface pattern is the standard solution.
 
 ### What happens when Redis goes down?
 
@@ -169,7 +169,7 @@ Currently fail-closed: 503 to all clients with a clean error response. In produc
 .\mvnw test
 ```
 
-11 tests, ~12 seconds. Integration tests spin up real Redis containers via Testcontainers — make sure Docker is running.
+11 tests, ~12 seconds. Integration tests spin up real Redis containers via Testcontainers and make sure Docker is running.
 
 ## What I'd do in v2
 
